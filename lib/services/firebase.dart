@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_cast
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 FirebaseFirestore database = FirebaseFirestore.instance;
@@ -19,21 +21,14 @@ Stream<List<Map<String, dynamic>>> gettarea() {
       .collection('homework')
       .snapshots()
       .map((snapshot) {
-    return snapshot.docs.map((doc) => doc.data()).toList();
+    return snapshot.docs
+        .map((doc) => {'id': doc.id, ...doc.data()} as Map<String, dynamic>)
+        .toList();
   });
-  /*  List<Map<String, dynamic>> tarea = [];
-  CollectionReference collectionReferencePerson =
-      database.collection('homework');
-  QuerySnapshot queryPerson =  collectionReferencePerson.get();
-  for (var documento in queryPerson.docs) {
-    tarea.add(documento.data() as Map<String, dynamic>);
-  }
-  return tarea; */
 }
 
 Future<List<Map<String, dynamic>>> getcombinedData() async {
   List<Map<String, dynamic>> person = await getPerson();
-  /* List<Map<String, dynamic>> tarea = await gettarea(); */
   return [...person];
 }
 
@@ -65,6 +60,18 @@ Future<void> addhomework(String titulo, campo, descrip) async {
     "id": homework + 1,
     "titulo": titulo,
     "campo": campo,
-    "descrip": descrip
+    "descrip": descrip,
+    "realizada": 0,
   });
 }
+
+/* Future<void> update() async {
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+  DocumentReference docRef =
+      firestore.collection('tuColeccion').doc('homework');
+
+  await docRef.update({
+    'realizada': 'valorDelNuevoCampo',
+  });
+} */

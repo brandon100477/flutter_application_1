@@ -1,10 +1,19 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable, overridden_fields
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/pages/welcome.dart';
+import 'package:flutter_application_1/services/firebase.dart';
 
 // ignore: camel_case_types
 class homework extends StatelessWidget {
-  const homework(userDoc, {super.key});
+  final int taskId;
+  @override
+  final Key key;
+  final DocumentSnapshot userDoc;
+  const homework(
+      {required this.taskId, required this.key, required this.userDoc})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +21,7 @@ class homework extends StatelessWidget {
       appBar: AppBar(
         //Es el encavezado o navegador.
         title: const Text(
-          "Welcome to My app of homework",
+          "Carry out",
           style: TextStyle(
               color: Color.fromARGB(
                   255, 255, 255, 255)), //Color del texto de encabezado
@@ -25,7 +34,7 @@ class homework extends StatelessWidget {
         child: Column(children: [
           titulo(),
           SizedBox(height: 40),
-          cuerpo(context),
+          cuerpo(context, userDoc, taskId),
         ]),
       ),
     );
@@ -35,44 +44,38 @@ class homework extends StatelessWidget {
 Widget titulo() {
   return Center(
     child: Text(
-      "Aquí se mostrará la descripción de cualquier tarea",
+      "Descripción de la Tarea",
       style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
       textAlign: TextAlign.center,
     ),
   );
 }
 
-Widget cuerpo(BuildContext context) {
+Widget cuerpo(BuildContext context, DocumentSnapshot userDoc, int taskId) {
   return Column(
     children: [
-      Text(
-        "Descripción de la tarea 1. Descripción de la tarea 1 Descripción de la tarea 1 Descripción de la tarea 1 Descripción de la tarea 1Descripción de la tarea 1",
-        textAlign: TextAlign.justify,
-      ),
+      title(taskId),
       SizedBox(
         height: 30.0,
       ),
-      Text(
-        "Lugar: Un ejemplo de la sede donde está el problema. ",
-        textAlign: TextAlign.justify,
-      ),
+      descrip(),
       SizedBox(
         height: 30.0,
       ),
-      Text(
-        "Realizado por: ",
-        textAlign: TextAlign.justify,
+      lugar(),
+      SizedBox(
+        height: 30.0,
       ),
       id(),
       SizedBox(
         height: 30.0,
       ),
-      hecho(context),
+      hecho(context, userDoc),
     ],
   );
 }
 
-Widget hecho(context) {
+Widget hecho(context, DocumentSnapshot userDoc) {
   return Center(
     child: ElevatedButton(
       style: ButtonStyle(
@@ -86,7 +89,9 @@ Widget hecho(context) {
           },
         ),
       ),
-      onPressed: () {},
+      onPressed: () {
+        alerta(context, userDoc);
+      },
       child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
@@ -107,13 +112,75 @@ Widget hecho(context) {
   );
 }
 
+TextEditingController nameController = TextEditingController(text: "");
+
 Widget id() {
   return Container(
-      padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0),
-      child: TextField(
-        decoration: InputDecoration(
-            hintText: "Identificación",
-            fillColor: const Color.fromARGB(255, 255, 255, 255),
-            filled: true),
-      ));
+    padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0),
+    child: TextField(
+      controller: nameController,
+      decoration: InputDecoration(
+        hintText: "",
+        labelText: "Identificación: ${nameController.text}",
+        fillColor: const Color.fromARGB(255, 255, 255, 255),
+        filled: true,
+      ),
+    ),
+  );
+}
+
+Widget title(int taskId) {
+  return StreamBuilder(
+      stream: gettarea(),
+      builder: (context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else {
+          List<Map<String, dynamic>> data = snapshot.data!;
+          Map<String, dynamic>? matchingTask = data.firstWhere(
+            (task) => task['id'] == taskId,
+            orElse: () => {},
+          );
+          // ignore: unnecessary_null_comparison
+          return Text(
+              matchingTask.isNotEmpty ? matchingTask['titulo'].toString() : '');
+        }
+      });
+}
+
+Widget descrip() {
+  return Text(
+    "Aqui vendría la descripción de la tarea y detalles adicionales si son necesarios.",
+    textAlign: TextAlign.justify,
+  );
+}
+
+Widget lugar() {
+  return Text(
+    "Seria la sede",
+    textAlign: TextAlign.left,
+  );
+}
+
+void alerta(BuildContext context, DocumentSnapshot userDoc) {
+  showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+            title: Text("Perfecto"),
+            content: Text("Tarea realizada con éxito"),
+            actions: <Widget>[
+              TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => welcome(userDoc)));
+                  },
+                  child: Text("De acuerdo.")),
+            ]);
+      });
 }

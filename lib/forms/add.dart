@@ -17,7 +17,7 @@ class add extends StatelessWidget {
       appBar: AppBar(
         //Es el encavezado o navegador.
         title: const Text(
-          "Añadir Tarea",
+          "New Homework",
           style: TextStyle(
               color: Color.fromARGB(
                   255, 255, 255, 255)), //Color del texto de encabezado

@@ -46,13 +46,6 @@ class _inicioState extends State<inicio> {
     return Scaffold(
         body: Column(
       children: <Widget>[
-        /* Expanded(
-          flex: 2,
-          child: FutureBuilder(
-            future: getPerson(),
-            builder: _builder,
-          ),
-        ), */
         Expanded(
           flex: 1,
           child: cuerpo(context),

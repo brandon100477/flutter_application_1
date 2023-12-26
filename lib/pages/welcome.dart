@@ -1,6 +1,7 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, sized_box_for_whitespace
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, sized_box_for_whitespace, avoid_unnecessary_containers
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/forms/add.dart';
 import 'package:flutter_application_1/forms/table.dart';
@@ -52,7 +53,7 @@ Widget cuerpo(BuildContext context, DocumentSnapshot userDoc) {
   return Container(
       child: Column(
     children: [
-      tabla(),
+      tabla(userDoc),
       SizedBox(
         height: 30.0,
       ),
@@ -75,7 +76,7 @@ Widget cuerpo(BuildContext context, DocumentSnapshot userDoc) {
   ));
 }
 
-Widget provicional(context) {
+Widget provicional(context, DocumentSnapshot userDoc, int tareaId) {
   return Center(
     child: ElevatedButton(
       style: ButtonStyle(
@@ -90,8 +91,14 @@ Widget provicional(context) {
         ),
       ),
       onPressed: () {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => homework(dynamic)));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => homework(
+                      taskId: tareaId,
+                      key: Key('myUniqueKey'),
+                      userDoc: userDoc,
+                    )));
       },
       child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -186,7 +193,7 @@ Widget nuevo(context, DocumentSnapshot userDoc) {
   );
 }
 
-Widget tabla() {
+Widget tabla(DocumentSnapshot userDoc) {
   return Center(
       child: Padding(
     padding: const EdgeInsets.all(0.0),
@@ -205,25 +212,35 @@ Widget tabla() {
               } else {
                 List<Map<String, dynamic>> data = snapshot.data!;
                 data.sort((a, b) => a['id'].compareTo(b['id']));
-                return Column(
-                  children: [
-                    for (var tareaData in data)
-                      Center(
-                          child: Column(
-                        children: [
-                          Text(
-                            tareaData['titulo'].toString(),
-                            style: TextStyle(
-                                fontSize: 15.0, fontWeight: FontWeight.bold),
-                          ),
-                          provicional(context),
-                          SizedBox(
-                            height: 30.0,
-                          ),
-                        ],
-                      )),
-                  ],
-                );
+                if (data.isEmpty) {
+                  return Text(
+                    'Lo sentimos. Aún no hay tareas para mostrar',
+                    style:
+                        TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  );
+                } else {
+                  return Column(
+                    children: [
+                      for (var tareaData in data)
+                        Center(
+                            child: Column(
+                          children: [
+                            Text(
+                              tareaData['titulo'].toString(),
+                              style: TextStyle(
+                                  fontSize: 15.0, fontWeight: FontWeight.bold),
+                            ),
+                            Text(tareaData['id'].toString()),
+                            provicional(context, userDoc, tareaData['id']),
+                            SizedBox(
+                              height: 30.0,
+                            ),
+                          ],
+                        )),
+                    ],
+                  );
+                }
               }
             }),
       ),
