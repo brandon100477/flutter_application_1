@@ -45,7 +45,7 @@ Widget titulo() {
   return Center(
     child: Text(
       "Descripción de la Tarea",
-      style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+      style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.bold),
       textAlign: TextAlign.center,
     ),
   );
@@ -58,11 +58,11 @@ Widget cuerpo(BuildContext context, DocumentSnapshot userDoc, int taskId) {
       SizedBox(
         height: 30.0,
       ),
-      descrip(),
+      descrip(taskId),
       SizedBox(
         height: 30.0,
       ),
-      lugar(),
+      lugar(taskId),
       SizedBox(
         height: 30.0,
       ),
@@ -70,12 +70,12 @@ Widget cuerpo(BuildContext context, DocumentSnapshot userDoc, int taskId) {
       SizedBox(
         height: 30.0,
       ),
-      hecho(context, userDoc),
+      hecho(context, userDoc, taskId),
     ],
   );
 }
 
-Widget hecho(context, DocumentSnapshot userDoc) {
+Widget hecho(context, DocumentSnapshot userDoc, int taskId) {
   return Center(
     child: ElevatedButton(
       style: ButtonStyle(
@@ -90,6 +90,7 @@ Widget hecho(context, DocumentSnapshot userDoc) {
         ),
       ),
       onPressed: () {
+        update(nameController.text, taskId);
         alerta(context, userDoc);
       },
       child: const Row(
@@ -134,34 +135,79 @@ Widget title(int taskId) {
       stream: gettarea(),
       builder: (context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+          return CircularProgressIndicator(); //Widget para simbolo de carga
         } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
+          return Text('Error: ${snapshot.error}'); //Controlador de error
         } else {
-          List<Map<String, dynamic>> data = snapshot.data!;
+          List<Map<String, dynamic>> data =
+              snapshot.data!; //Enlistado de los datos
           Map<String, dynamic>? matchingTask = data.firstWhere(
-            (task) => task['id'] == taskId,
+            (task) =>
+                task['id'] == taskId, //Declaracion y comparacion de variables
             orElse: () => {},
           );
           // ignore: unnecessary_null_comparison
           return Text(
-              matchingTask.isNotEmpty ? matchingTask['titulo'].toString() : '');
+            matchingTask.isNotEmpty ? matchingTask['titulo'].toString() : '',
+            style: TextStyle(
+                color: Color.fromARGB(255, 0, 0, 0),
+                fontSize: 20.0,
+                fontWeight: FontWeight.bold),
+          ); // especificacion del campo que se quiere mostrar
         }
       });
 }
 
-Widget descrip() {
-  return Text(
-    "Aqui vendría la descripción de la tarea y detalles adicionales si son necesarios.",
-    textAlign: TextAlign.justify,
-  );
+Widget descrip(int taskId) {
+  return StreamBuilder(
+      stream: gettarea(),
+      builder: (context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator(); //Widget para simbolo de carga
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}'); //Controlador de error
+        } else {
+          List<Map<String, dynamic>> data =
+              snapshot.data!; //Enlistado de los datos
+          Map<String, dynamic>? matchingTask = data.firstWhere(
+            (task) =>
+                task['id'] == taskId, //Declaracion y comparacion de variables
+            orElse: () => {},
+          );
+          return Text(
+            matchingTask.isNotEmpty ? matchingTask.toString() : '',
+            style:
+                TextStyle(color: Color.fromARGB(255, 0, 0, 0), fontSize: 16.0),
+            textAlign: TextAlign.justify,
+          );
+        }
+      });
 }
 
-Widget lugar() {
-  return Text(
-    "Seria la sede",
-    textAlign: TextAlign.left,
-  );
+Widget lugar(int taskId) {
+  return StreamBuilder(
+      stream: gettarea(),
+      builder: (context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator(); //Widget para simbolo de carga
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}'); //Controlador de error
+        } else {
+          List<Map<String, dynamic>> data =
+              snapshot.data!; //Enlistado de los datos
+          Map<String, dynamic>? matchingTask = data.firstWhere(
+            (task) =>
+                task['id'] == taskId, //Declaracion y comparacion de variables
+            orElse: () => {},
+          );
+          return Text(
+            matchingTask.isNotEmpty ? matchingTask['campo'].toString() : '',
+            style:
+                TextStyle(color: Color.fromARGB(255, 0, 0, 0), fontSize: 16.0),
+            textAlign: TextAlign.left,
+          );
+        }
+      });
 }
 
 void alerta(BuildContext context, DocumentSnapshot userDoc) {

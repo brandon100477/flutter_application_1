@@ -1,22 +1,40 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, sized_box_for_whitespace, avoid_unnecessary_containers
+import 'dart:js';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/forms/add.dart';
 import 'package:flutter_application_1/forms/table.dart';
+import 'package:flutter_application_1/main.dart';
 import 'package:flutter_application_1/pages/homework.dart';
 import 'package:flutter_application_1/services/firebase.dart';
 
 // ignore: camel_case_types
 class welcome extends StatelessWidget {
   final DocumentSnapshot userDoc;
-  const welcome(this.userDoc, {super.key});
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  welcome(this.userDoc, {super.key});
+
+  void signOut(BuildContext context) async {
+    await auth.signOut();
+    // ignore: use_build_context_synchronously
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => App()));
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+            icon: Icon(Icons.close,
+                color: Color.fromARGB(255, 255, 255,
+                    255)), // Aquí puedes cambiar el icono según tus necesidades
+            onPressed: () {
+              signOut(context);
+            }),
         //Es el encavezado o navegador.
         title: Text(
           "Bienvenido, ${userDoc['nombre']}",
@@ -211,6 +229,9 @@ Widget tabla(DocumentSnapshot userDoc) {
                 return Text('Error: ${snapshot.error}');
               } else {
                 List<Map<String, dynamic>> data = snapshot.data!;
+                List<Map<String, dynamic>> tareasNo = data
+                    .where((tareaData) => tareaData['realizada'] == 1)
+                    .toList();
                 data.sort((a, b) => a['id'].compareTo(b['id']));
                 if (data.isEmpty) {
                   return Text(
@@ -222,7 +243,7 @@ Widget tabla(DocumentSnapshot userDoc) {
                 } else {
                   return Column(
                     children: [
-                      for (var tareaData in data)
+                      for (var tareaData in tareasNo)
                         Center(
                             child: Column(
                           children: [
@@ -231,7 +252,6 @@ Widget tabla(DocumentSnapshot userDoc) {
                               style: TextStyle(
                                   fontSize: 15.0, fontWeight: FontWeight.bold),
                             ),
-                            Text(tareaData['id'].toString()),
                             provicional(context, userDoc, tareaData['id']),
                             SizedBox(
                               height: 30.0,
